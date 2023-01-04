@@ -36,6 +36,7 @@ spec:
       tag: 2022.12.9@sha256:796eb4dd0c65eb1d01476a719684016f7f2bafbfbf6269bcadec6a7fb7321b6f
     env:
       TZ: "${TIMEZONE}"
+    hostNetwork: true
     service:
       main:
         type: LoadBalancer
