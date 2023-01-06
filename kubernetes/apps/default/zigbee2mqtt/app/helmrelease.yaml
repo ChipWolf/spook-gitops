@@ -41,6 +41,11 @@ spec:
           metrics:
             enabled: true
             port: 80
+    persistence:
+      usb:
+        enabled: true
+        type: hostPath
+        hostPath: /dev/ttyUSB0
     serviceMonitor:
       main:
         enabled: true
@@ -65,10 +70,7 @@ spec:
           - hosts:
               - *host
     podSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
-      fsGroupChangePolicy: "OnRootMismatch"
+      privileged: true
     volumeClaimTemplates:
       - name: config
         mountPath: /data
