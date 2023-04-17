@@ -33,8 +33,12 @@ spec:
     image:
       repository: grinco/ispyagentdvr
       tag: 4.4.6.0
+    hostNetwork: true
     service:
       main:
+        type: LoadBalancer
+        externalIPs: ["${SVC_ISPY_ADDR}"]
+        externalTrafficPolicy: Local
         ports:
           http:
             port: 8090
