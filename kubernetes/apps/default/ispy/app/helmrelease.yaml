@@ -31,8 +31,8 @@ spec:
       annotations:
         reloader.stakater.com/auto: "true"
     image:
-      repository: doitandbedone/ispyagentdvr
-      tag: 4.6.9.0
+      repository: grinco/ispyagentdvr
+      tag: 4.4.6.0
     service:
       main:
         ports:
