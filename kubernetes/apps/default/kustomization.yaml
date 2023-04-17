@@ -6,5 +6,6 @@ resources:
   - ./echo-server/ks.yaml
   - ./emqx/ks.yaml
   - ./hajimari/ks.yaml
+  - ./ispy/ks.yaml
   - ./home-assistant/ks.yaml
   - ./zigbee2mqtt/ks.yaml
