@@ -36,7 +36,7 @@ spec:
       tag: 1.30.3
     env:
       TZ: "${TIMEZONE}"
-      ZIGBEE2MQTT_DATA: /config
+      ZIGBEE2MQTT_DATA: &path /config
       ZIGBEE2MQTT_CONFIG_ADVANCED_HOMEASSISTANT_DISCOVERY_TOPIC: homeassistant
       ZIGBEE2MQTT_CONFIG_ADVANCED_HOMEASSISTANT_LEGACY_ENTITY_ATTRIBUTES: "false"
       ZIGBEE2MQTT_CONFIG_ADVANCED_HOMEASSISTANT_LEGACY_TRIGGERS: "false"
@@ -54,7 +54,7 @@ spec:
       ZIGBEE2MQTT_CONFIG_DEVICE_OPTIONS_RETAIN: "true"
       ZIGBEE2MQTT_CONFIG_EXPERIMENTAL_NEW_API: "true"
       ZIGBEE2MQTT_CONFIG_FRONTEND_PORT: &port 80
-      ZIGBEE2MQTT_CONFIG_FRONTEND_URL: "https://zigbee2mqtt.${SECRET_DOMAIN}"
+      ZIGBEE2MQTT_CONFIG_FRONTEND_URL: &host "{{ .Release.Name }}.${SECRET_DOMAIN}"
       ZIGBEE2MQTT_CONFIG_HOMEASSISTANT: "true"
       ZIGBEE2MQTT_CONFIG_MQTT_INCLUDE_DEVICE_INFORMATION: "true"
       ZIGBEE2MQTT_CONFIG_MQTT_KEEPALIVE: 60
@@ -84,7 +84,7 @@ spec:
         annotations:
           hajimari.io/icon: mdi:zigbee
         hosts:
-          - host: &host "{{ .Release.Name }}.${SECRET_DOMAIN}"
+          - host: *host
             paths:
               - path: /
                 pathType: Prefix
@@ -95,7 +95,7 @@ spec:
       privileged: true
     volumeClaimTemplates:
       - name: config
-        mountPath: /config
+        mountPath: *path
         accessMode: ReadWriteOnce
         size: 1Gi
     resources:
