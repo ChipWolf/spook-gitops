@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.devbu.io/helm.toolkit.fluxcd.io/helmrelease_v2beta1.json
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -9,12 +10,12 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 1.2.1
+      version: 1.4.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
-  maxHistory: 3
+  maxHistory: 2
   install:
     createNamespace: true
     remediation:
@@ -33,28 +34,49 @@ spec:
     image:
       repository: ghcr.io/koenkk/zigbee2mqtt
       tag: 1.30.3
+    env:
+      TZ: "${TIMEZONE}"
+      ZIGBEE2MQTT_DATA: /config
+      ZIGBEE2MQTT_CONFIG_ADVANCED_HOMEASSISTANT_DISCOVERY_TOPIC: homeassistant
+      ZIGBEE2MQTT_CONFIG_ADVANCED_HOMEASSISTANT_LEGACY_ENTITY_ATTRIBUTES: "false"
+      ZIGBEE2MQTT_CONFIG_ADVANCED_HOMEASSISTANT_LEGACY_TRIGGERS: "false"
+      ZIGBEE2MQTT_CONFIG_ADVANCED_HOMEASSISTANT_STATUS_TOPIC: homeassistant/status
+      ZIGBEE2MQTT_CONFIG_ADVANCED_LAST_SEEN: ISO_8601
+      ZIGBEE2MQTT_CONFIG_ADVANCED_LEGACY_API: "false"
+      ZIGBEE2MQTT_CONFIG_ADVANCED_LEGACY_AVAILABILITY_PAYLOAD: "false"
+      ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_LEVEL: info # debug
+      ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT: '["console"]'
+      ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID: 6754
+      ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY: '[11, 8, 2, 4, 7, 4, 2, 0, 6, 9, 3, 14, 15, 9, 6, 6]'
+      ZIGBEE2MQTT_CONFIG_AVAILABILITY_ACTIVE_TIMEOUT: 60
+      ZIGBEE2MQTT_CONFIG_AVAILABILITY_PASSIVE_TIMEOUT: 2000
+      ZIGBEE2MQTT_CONFIG_DEVICE_OPTIONS_LEGACY: "false"
+      ZIGBEE2MQTT_CONFIG_DEVICE_OPTIONS_RETAIN: "true"
+      ZIGBEE2MQTT_CONFIG_EXPERIMENTAL_NEW_API: "true"
+      ZIGBEE2MQTT_CONFIG_FRONTEND_PORT: &port 80
+      ZIGBEE2MQTT_CONFIG_FRONTEND_URL: "https://zigbee2mqtt.${SECRET_DOMAIN}"
+      ZIGBEE2MQTT_CONFIG_HOMEASSISTANT: "true"
+      ZIGBEE2MQTT_CONFIG_MQTT_INCLUDE_DEVICE_INFORMATION: "true"
+      ZIGBEE2MQTT_CONFIG_MQTT_KEEPALIVE: 60
+      ZIGBEE2MQTT_CONFIG_MQTT_REJECT_UNAUTHORIZED: "true"
+      ZIGBEE2MQTT_CONFIG_MQTT_SERVER: mqtt://emqx.default.svc.cluster.local
+      ZIGBEE2MQTT_CONFIG_MQTT_VERSION: 5
+      ZIGBEE2MQTT_CONFIG_PERMIT_JOIN: "false"
+      ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE: 115200
+      ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED: "false"
+      ZIGBEE2MQTT_CONFIG_SERIAL_PORT: &serial /dev/ttyUSB0
+      ZIGBEE2MQTT_CONFIG_DEVICES: devices.yaml
+      ZIGBEE2MQTT_CONFIG_GROUPS: groups.yaml
     service:
       main:
         ports:
           http:
-            port: 8080
-          metrics:
-            enabled: true
-            port: 80
+            port: *port
     persistence:
       usb:
         enabled: true
         type: hostPath
-        hostPath: /dev/ttyUSB0
-    serviceMonitor:
-      main:
-        enabled: true
-        endpoints:
-          - port: metrics
-            scheme: http
-            path: /metrics
-            interval: 1m
-            scrapeTimeout: 10s
+        hostPath: *serial
     ingress:
       main:
         enabled: true
@@ -73,7 +95,7 @@ spec:
       privileged: true
     volumeClaimTemplates:
       - name: config
-        mountPath: /data
+        mountPath: /config
         accessMode: ReadWriteOnce
         size: 1Gi
     resources:
