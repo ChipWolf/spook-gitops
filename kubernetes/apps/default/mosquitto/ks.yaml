@@ -7,7 +7,7 @@ metadata:
 spec:
   interval: 30m
   ref:
-    tag: "2023.4.1"
+    tag: "2023.11.0"
   url: "https://github.com/onedr0p/home-ops"
   ignore: |
     # exclude all
