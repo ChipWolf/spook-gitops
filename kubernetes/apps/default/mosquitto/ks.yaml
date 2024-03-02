@@ -1,98 +1,18 @@
 ---
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: GitRepository
-metadata:
-  name: onedr0p-kubernetes
-  namespace: flux-system
-spec:
-  interval: 30m
-  ref:
-    tag: "2023.4.1"
-  url: "https://github.com/onedr0p/home-ops"
-  ignore: |
-    # exclude all
-    /*
-    # include kubernetes directories
-    !/kubernetes/apps/default/mosquitto/app
----
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: onedr0p-apps-mosquitto
+  name: cluster-apps-mosquitto
   namespace: flux-system
 spec:
-  path: ./kubernetes/apps/default/mosquitto/app
+  targetNamespace: default
+  path: ./kubernetes/main/apps/default/mosquitto/app
   prune: true
   sourceRef:
     kind: GitRepository
-    name: onedr0p-kubernetes
-  healthChecks:
-    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      name: mosquitto
-      namespace: default
-  interval: 15m
+    name: home-kubernetes
+  wait: false
+  interval: 30m
   retryInterval: 1m
-  timeout: 3m
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: cluster-settings
-      - kind: Secret
-        name: cluster-secrets
-  patches:
-    - patch: |-
-        apiVersion: helm.toolkit.fluxcd.io/v2beta1
-        kind: HelmRelease
-        metadata:
-          name: not-used
-        spec:
-          chart:
-            spec:
-              chart: app-template
-              version: 1.4.0
-          values:
-            initContainers:
-              01-init-config:
-                args: ["echo admin:admin > /data/external_config/mosquitto_pwd && mosquitto_passwd -U /data/external_config/mosquitto_pwd"]
-                volumeMounts:
-                  - { name: external-config, mountPath: /data/external_config }
-            image:
-              repository: public.ecr.aws/docker/library/eclipse-mosquitto
-              tag: 2.0.15
-            service:
-              main:
-                annotations:
-                  coredns.io/hostname: "mosquitto.${SECRET_DOMAIN}"
-                externalIPs: ["${SVC_MOSQUITTO_ADDR}"]
-            volumeClaimTemplates:
-              $patch: delete
-            persistence:
-              secret-file:
-                $patch: delete
-      target:
-        kind: HelmRelease
-        name: mosquitto
-        namespace: default
-    - patch: |-
-        $patch: delete
-        apiVersion: external-secrets.io/v1beta1
-        kind: ExternalSecret
-        metadata:
-          name: not-used
-      target:
-        group: external-secrets.io
-        kind: ExternalSecret
-    - patch: |-
-        $patch: delete
-        apiVersion: volsync.backube/v1alpha1
-        kind: ReplicationSource
-        metadata:
-          name: not-used
-      target:
-        group: volsync.backube
-        kind: ReplicationSource
+  timeout: 5m
