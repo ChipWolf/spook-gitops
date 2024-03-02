@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: onedr0p-apps-mosquitto
+    - name: cluster-apps-mosquitto
   path: ./kubernetes/apps/default/zigbee2mqtt/app
   prune: true
   sourceRef:
